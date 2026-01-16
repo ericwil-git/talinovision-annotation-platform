@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Annotation Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .video-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .video-item {
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .video-item:hover {
+            background-color: #f9f9f9;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .btn-annotate {
+            background-color: #28a745;
+        }
+        .btn-annotate:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Annotation Platform</h1>
+    <div class="video-list">
+        <h2>Available Videos</h2>
+        <div id="videos">Loading...</div>
+    </div>
+
+    <script>
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                const projects = data.projects || [];
+                
+                const videosDiv = document.getElementById('videos');
+                videosDiv.innerHTML = '';
+                
+                if (projects.length === 0) {
+                    videosDiv.innerHTML = '<p>No videos available. Upload videos to get started.</p>';
+                    return;
+                }
+                
+                for (const project of projects) {
+                    const projectDiv = document.createElement('div');
+                    projectDiv.innerHTML = `<h3>Project: ${project.name}</h3>`;
+                    
+                    for (const video of project.videos) {
+                        const videoDiv = document.createElement('div');
+                        videoDiv.className = 'video-item';
+                        videoDiv.innerHTML = `
+                            <span>${video.fileName}</span>
+                            <div>
+                                <button class="btn-annotate" onclick="window.location.href='/static/annotate.html?video=${encodeURIComponent(video.blobName)}'">Annotate</button>
+                                <button onclick="window.location.href='/static/player.html?video=${encodeURIComponent(video.blobName)}'">View</button>
+                            </div>
+                        `;
+                        projectDiv.appendChild(videoDiv);
+                    }
+                    
+                    videosDiv.appendChild(projectDiv);
+                }
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                document.getElementById('videos').innerHTML = 'Error loading videos: ' + error.message;
+            }
+        }
+        
+        loadVideos();
+    </script>
+</body>
+</html>

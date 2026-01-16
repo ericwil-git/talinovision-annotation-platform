@@ -1,0 +1,77 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: rg-video-annotation
+  AZURE_LOCATION: eastus
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Deploy Infrastructure
+        run: |
+          az deployment group create \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infrastructure/main.bicep \
+            --parameters infrastructure/parameters.dev.json
+      
+      - name: Get Deployment Outputs
+        id: outputs
+        run: |
+          ACR_NAME=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name main \
+            --query properties.outputs.containerRegistryName.value -o tsv)
+          echo "acr_name=$ACR_NAME" >> $GITHUB_OUTPUT
+      
+      - name: Build and Push Docker Image
+        run: |
+          az acr build \
+            --registry ${{ steps.outputs.outputs.acr_name }} \
+            --image annotation-service:${{ github.sha }} \
+            --image annotation-service:latest \
+            ./annotation-service
+      
+      - name: Update Container App
+        run: |
+          CONTAINER_APP=$(az containerapp list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[?contains(name, 'annotation')].name" -o tsv)
+          
+          az containerapp update \
+            --name $CONTAINER_APP \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ steps.outputs.outputs.acr_name }}.azurecr.io/annotation-service:${{ github.sha }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Build Frontend
+        run: |
+          cd frontend-upload
+          npm ci
+          npm run build
+      
+      - name: Deploy to Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/frontend-upload"
+          output_location: "dist"

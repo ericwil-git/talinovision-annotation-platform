@@ -1,0 +1,14 @@
+name: deployment-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - ultralytics==8.1.0
+    - torch==2.2.0
+    - torchvision==0.17.0
+    - opencv-python-headless==4.9.0.80
+    - numpy==1.26.4
+    - pillow==10.2.0
+    - azureml-core==1.53.0

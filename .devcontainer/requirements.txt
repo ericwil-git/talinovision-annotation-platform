@@ -1,0 +1,27 @@
+# Core ML and CV libraries
+opencv-python==4.9.0.80
+opencv-contrib-python==4.9.0.80
+numpy==1.26.4
+pillow==10.2.0
+
+# Azure SDK
+azure-identity==1.15.0
+azure-storage-blob==12.19.0
+azure-ai-ml==1.13.0
+azure-mgmt-containerinstance==10.1.0
+
+# ML frameworks
+torch==2.2.0
+torchvision==0.17.0
+ultralytics==8.1.0
+
+# Web frameworks
+flask==3.0.1
+flask-cors==4.0.0
+streamlit==1.31.0
+
+# Utilities
+python-dotenv==1.0.1
+pyyaml==6.0.1
+requests==2.31.0
+tqdm==4.66.1

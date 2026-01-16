@@ -1,0 +1,18 @@
+# Sample data.yaml for YOLOv8 training
+# Update paths to match your dataset structure
+
+# Train/val/test sets
+train: ../datasets/train/images
+val: ../datasets/val/images
+test: ../datasets/test/images
+
+# Number of classes
+nc: 2
+
+# Class names
+names:
+  0: person
+  1: vehicle
+
+# Optional: dataset info
+download: false

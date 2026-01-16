@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: video-annotation-platform
+metadata:
+  template: video-annotation-platform@0.0.1
+
+infra:
+  path: infrastructure
+
+services:
+  frontend:
+    project: ./frontend-upload
+    language: js
+    host: staticwebapp
+    dist: dist
+
+  annotation-api:
+    project: ./annotation-service
+    language: python
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      context: .
+
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: |
+        echo "Setting up Azure ML compute..."
+        az ml compute create --file infrastructure/modules/ml-compute-config.yml --resource-group $AZURE_RESOURCE_GROUP --workspace-name $AZURE_ML_WORKSPACE_NAME || true
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Setting up Azure ML compute..."
+        az ml compute create --file infrastructure/modules/ml-compute-config.yml --resource-group $env:AZURE_RESOURCE_GROUP --workspace-name $env:AZURE_ML_WORKSPACE_NAME

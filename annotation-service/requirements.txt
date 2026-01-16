@@ -1,0 +1,10 @@
+Flask==3.0.1
+flask-cors==4.0.0
+opencv-python==4.9.0.80
+opencv-contrib-python==4.9.0.80
+numpy==1.26.4
+Pillow==10.2.0
+azure-storage-blob==12.19.0
+azure-identity==1.15.0
+python-dotenv==1.0.1
+gunicorn==21.2.0
