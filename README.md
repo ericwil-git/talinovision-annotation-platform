@@ -228,6 +228,24 @@ cd ml-pipeline
 python training/train.py --test
 ```
 
+## 🧪 Daily Startup Checklist
+
+If the site is broken when you start your day:
+
+```bash
+# 1. Check if storage access is the issue
+./scripts/fix-storage-access.sh
+
+# 2. If still broken, investigate
+./scripts/investigate-storage-changes.sh
+
+# 3. Check backend logs
+az containerapp logs show \
+  --name annotation-service \
+  --resource-group rg-vidann-dev \
+  --follow
+```
+
 ## 📁 Project Structure
 
 ```
