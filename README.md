@@ -39,7 +39,6 @@ Frontend (Azure Storage Static Website) → Annotation API (Container Apps) → 
 ### Testing the Platform
 
 1. **Upload a video**:
-
    - Visit the frontend URL
    - Enter a project name
    - Select a video file (up to 1GB)
@@ -377,7 +376,7 @@ Content-Type: application/json
 
 **Get Frame Stats**
 
-```bash
+````bash
 GET /api/frames/stat - Alpha v0.1
 
 **Release Date**: January 16, 2026
@@ -466,9 +465,10 @@ GET /api/frames/stat - Alpha v0.1
 **Quick Fix**:
 ```bash
 ./scripts/fix-storage-access.sh
-```
+````
 
 **Permanent Solution**: Set up automated monitoring:
+
 ```bash
 # Add to crontab (runs every hour)
 crontab -e
@@ -476,6 +476,7 @@ crontab -e
 ```
 
 📖 **See [Storage Access Fix Guide](./docs/STORAGE-ACCESS-FIX.md)** for:
+
 - Root cause investigation
 - Automated watchdog setup
 - Long-term architectural solutions
@@ -573,4 +574,7 @@ MIT License - See LICENSE file for details
 **Documentation**: [Complete Wiki](./docs/WIKI.md) | [API Reference](./docs/WIKI.md#api-reference)
 
 For questions, issues, or contributions, please refer to the [Wiki](./docs/WIKI.md) or create an issue in the repository.
+
+```
+
 ```

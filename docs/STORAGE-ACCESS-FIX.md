@@ -1,16 +1,20 @@
 # Storage Public Access Fix
 
 ## Problem
+
 The storage account's `publicNetworkAccess` setting keeps getting disabled daily, breaking the site.
 
 ## Root Cause Investigation
+
 Based on investigation, possible causes:
+
 1. **Azure Policy** (subscription or management group level)
-2. **Security Center Auto-Remediation** 
+2. **Security Center Auto-Remediation**
 3. **Scheduled Automation**
 4. **Manual Changes**
 
 Run the investigation script to identify the cause:
+
 ```bash
 ./scripts/investigate-storage-changes.sh
 ```
@@ -18,12 +22,15 @@ Run the investigation script to identify the cause:
 ## Solutions Implemented
 
 ### 1. Quick Fix Script (Immediate Use)
+
 When the site is broken, run:
+
 ```bash
 ./scripts/fix-storage-access.sh
 ```
 
 This script:
+
 - ✅ Checks current storage public access status
 - ✅ Re-enables it if disabled
 - ✅ Tests backend health
@@ -32,12 +39,15 @@ This script:
 **Use this every morning if the site is broken.**
 
 ### 2. Automated Watchdog (Preventive)
+
 A monitoring script that automatically fixes the issue:
+
 ```bash
 ./scripts/watchdog-storage-access.sh
 ```
 
 #### Setup as Cron Job (Linux/Mac)
+
 ```bash
 # Edit crontab
 crontab -e
@@ -50,6 +60,7 @@ crontab -e
 ```
 
 #### Setup as Scheduled Task (Windows)
+
 1. Open Task Scheduler
 2. Create Basic Task
 3. Trigger: Daily, repeat every 1 hour
@@ -60,6 +71,7 @@ crontab -e
 The watchdog creates logs at: `logs/storage-watchdog.log`
 
 ### 3. Azure Automation Runbook (Cloud-Based)
+
 For a cloud-native solution, create an Azure Automation runbook:
 
 ```powershell
@@ -83,7 +95,9 @@ if ($status -ne "Enabled") {
 Schedule this runbook to run hourly.
 
 ### 4. Infrastructure Lock (Attempted)
+
 We attempted to add a resource lock in Bicep:
+
 ```bicep
 resource storageAccountLock 'Microsoft.Authorization/locks@2020-05-01' = {
   scope: storageAccount
@@ -102,6 +116,7 @@ Note: `CanNotDelete` locks don't prevent property modifications, only deletion. 
 The proper fix is to redesign the architecture to not require public network access:
 
 ### Option A: Private Endpoints
+
 ```bicep
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
   name: 'pe-storage'
@@ -124,22 +139,26 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
 ```
 
 ### Option B: Service Endpoints with VNet Integration
+
 - Deploy Container App to a VNet subnet
 - Enable service endpoints for storage
 - Configure storage firewall to only allow VNet access
 - Keep `publicNetworkAccess: Disabled`
 
 ### Option C: Managed Identity with Private Access Only
+
 The current setup uses managed identity but still requires public access. With private endpoints, you can keep public access disabled permanently.
 
 ## Monitoring
 
 Check watchdog logs:
+
 ```bash
 tail -f logs/storage-watchdog.log
 ```
 
 Check Azure activity logs:
+
 ```bash
 az monitor activity-log list \
   --resource-group rg-vidann-dev \
@@ -157,6 +176,7 @@ az monitor activity-log list \
 ## Testing
 
 Test the fix script:
+
 ```bash
 # Check current status
 az storage account show --name vidanndevr5uc5ka6jxm4i \
@@ -173,6 +193,7 @@ curl https://annotation-service.bluemushroom-befb422f.eastus2.azurecontainerapps
 ## Support
 
 If the scripts don't work:
+
 1. Check Azure CLI is logged in: `az account show`
 2. Check you have permissions: `az role assignment list --assignee $(az account show --query user.name -o tsv)`
 3. Check the logs: `cat logs/storage-watchdog.log`
