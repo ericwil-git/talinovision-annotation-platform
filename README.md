@@ -459,6 +459,27 @@ GET /api/frames/stat - Alpha v0.1
 
 ## 🔧 Troubleshooting
 
+### ⚠️ Site Broken Daily - Storage Public Access Disabled
+
+**This is a known recurring issue.** The storage account's public network access gets disabled automatically, breaking the site.
+
+**Quick Fix**:
+```bash
+./scripts/fix-storage-access.sh
+```
+
+**Permanent Solution**: Set up automated monitoring:
+```bash
+# Add to crontab (runs every hour)
+crontab -e
+# Add: 0 * * * * cd /path/to/project && ./scripts/watchdog-storage-access.sh
+```
+
+📖 **See [Storage Access Fix Guide](./docs/STORAGE-ACCESS-FIX.md)** for:
+- Root cause investigation
+- Automated watchdog setup
+- Long-term architectural solutions
+
 ### Frontend shows 405 error
 
 - Ensure the API URL in the frontend is correct

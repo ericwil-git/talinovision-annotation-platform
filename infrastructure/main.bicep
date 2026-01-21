@@ -106,6 +106,16 @@ resource modelsContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   }
 }
 
+// Resource lock to prevent public access from being changed
+resource storageAccountLock 'Microsoft.Authorization/locks@2020-05-01' = {
+  scope: storageAccount
+  name: 'prevent-public-access-changes'
+  properties: {
+    level: 'CanNotDelete'
+    notes: 'Prevents deletion and helps preserve public network access settings'
+  }
+}
+
 // Container Registry for Docker images
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: containerRegistryName
