@@ -145,7 +145,34 @@ azd up
 2. Deploy the backend Container App
 3. Frontend must be deployed separately to Azure Storage (see below)
 
-### 4. Deploy Frontend (Manual Step)
+### 4. Verify and Fix Storage Access (Important!)
+
+After deployment, the storage account may have public access disabled. Run the fix script:
+
+```bash
+# Ensure storage is accessible
+./scripts/fix-storage-access.sh
+```
+
+This script will:
+
+- ✅ Check storage public network access status
+- ✅ Enable it if disabled
+- ✅ Test backend health
+- ✅ Display all URLs for testing
+
+**Recommended**: Set up automated monitoring to prevent daily breakage:
+
+```bash
+# Setup cron job to run hourly
+crontab -e
+# Add this line:
+# 0 * * * * cd /workspaces/video-annotation-platform && ./scripts/watchdog-storage-access.sh
+```
+
+See [Storage Access Fix Guide](./docs/STORAGE-ACCESS-FIX.md) for details.
+
+### 5. Deploy Frontend (Manual Step)
 
 After `azd up` completes, deploy the frontend:
 
@@ -163,7 +190,23 @@ az storage blob upload-batch \
   --overwrite
 ```
 
-### 5. Run Locally for Development
+### 6. Test the Platform
+
+```bash
+# Quick health check
+curl https://<your-annotation-service-url>/health
+
+# Or use the comprehensive test script
+./scripts/fix-storage-access.sh
+```
+
+**Testing URLs** (from azd output):
+
+- Upload Portal: `https://<static-web-app-url>`
+- Projects Page: `https://<annotation-service-url>/`
+- Annotation Interface: `https://<annotation-service-url>/annotate.html?video=<video-path>`
+
+### 7. Run Locally for Development
 
 ```bash
 # Terminal 1: Upload Portal
