@@ -1,13 +1,14 @@
-# Azure Video Annotation Platform - Alpha v0.1
+# Azure Video Annotation Platform - Alpha v0.2.0
 
 A professional, scalable video annotation solution for training custom computer vision models using Azure services and OpenCV.
 
-> **Status**: Alpha Release v0.1 - Core annotation features complete and functional
+> **Status**: Alpha v0.2.0 - Enhanced security with managed identity authentication
 
 [![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoft-azure&logoColor=white)](https://portal.azure.com)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.9-green.svg)](https://opencv.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-0.2.0--alpha-orange.svg)](CHANGELOG.md)
 
 ## 🏗️ Architecture
 
@@ -55,7 +56,7 @@ Frontend (Azure Storage Static Website) → Annotation API (Container Apps) → 
    curl https://annotation-service.bluemushroom-befb422f.eastus2.azurecontainerapps.io/api/videos
    ```
 
-## 🚀 Features (Alpha v0.1)
+## 🚀 Features (Alpha v0.2.0)
 
 ### ✅ Production-Ready Features
 
@@ -356,7 +357,7 @@ AZURE_ML_RESOURCE_GROUP=rg-vidann-dev
 6. **Train**: Azure ML pipeline trains custom YOLO model (future enhancement)
 7. **Deploy**: Model available via batch endpoint or download (future enhancement)
 
-## 🎯 API Endpoints (Alpha v0.1)
+## 🎯 API Endpoints (Alpha v0.2.0)
 
 ### System Endpoints
 
@@ -472,7 +473,7 @@ GET /api/frames/stat - Alpha v0.1
 **Release Date**: January 16, 2026
 **Status**: Alpha Release - Core Features Complete
 
-### ✅ Alpha v0.1 Features (Complete)
+### ✅ Alpha v0.2.0 Features (Complete)
 
 **Infrastructure & Deployment**
 - ✅ Azure infrastructure provisioning with Bicep
@@ -678,7 +679,7 @@ MIT License - See LICENSE file for details
 
 ---
 
-**Version**: Alpha v0.1
+**Version**: Alpha v0.2.0
 **Release Date**: January 16, 2026
 **Last Updated**: January 16, 2026
 **Deployment**: rg-vidann-dev (East US 2)

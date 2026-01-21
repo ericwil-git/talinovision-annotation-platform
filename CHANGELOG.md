@@ -5,6 +5,63 @@ All notable changes to the Video Annotation Platform will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-alpha] - 2026-01-21
+
+### 🔒 Security & Stability Release
+
+Major security improvements with managed identity authentication and critical bug fix for daily access issues.
+
+### Added
+
+- **Managed Identity Authentication**: Full migration from shared keys to Azure AD managed identity
+- **RBAC Role Assignments**: Automatic assignment of Storage Blob Data Contributor and Storage Blob Delegator roles
+- **Root Cause Analysis**: Comprehensive documentation of storage access issue investigation
+- **Automated Fix Scripts**:
+  - `fix-storage-access.sh` - Quick fix for storage access issues
+  - `watchdog-storage-access.sh` - Automated monitoring and prevention
+  - `investigate-storage-changes.sh` - Diagnostic tool for identifying changes
+- **Enhanced Documentation**: Complete security section with managed identity details
+
+### Changed
+
+- **BREAKING**: Removed all shared key authentication (connection strings, storage keys)
+- **Backend Authentication**: Now uses `DefaultAzureCredential` for all storage operations
+- **Environment Variables**: Simplified to only `AZURE_STORAGE_ACCOUNT_NAME` (no secrets)
+- **Infrastructure**: `allowSharedKeyAccess` set to `false` for enhanced security
+- **Local Development**: Changed to use `az login` instead of storage keys
+
+### Fixed
+
+- **Critical**: Daily storage access breakage caused by Bicep configuration contradiction
+- **Root Cause**: Azure Defender auto-remediation was disabling public access due to inconsistent security settings
+- **Solution**: Eliminated configuration contradiction by using managed identity consistently
+
+### Security
+
+- ✅ Zero secrets in configuration (no connection strings or keys)
+- ✅ Automatic credential rotation via managed identity
+- ✅ Audit trail for all storage access
+- ✅ Least privilege access control with RBAC
+- ✅ Azure security best practices compliance
+- ✅ No more daily access disruptions
+
+### Migration Notes
+
+Existing deployments need to redeploy to apply managed identity changes:
+
+```bash
+azd provision --no-prompt
+azd deploy
+```
+
+Local development now requires Azure CLI authentication:
+
+```bash
+az login  # Replaces storage key configuration
+```
+
+---
+
 ## [0.1.0-alpha] - 2026-01-16
 
 ### 🎉 Alpha Release
