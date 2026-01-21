@@ -142,12 +142,32 @@ azd up
 **Note**: The initial deployment will:
 
 1. Provision all Azure resources (Storage, Container Apps, ML Workspace, etc.)
-2. Deploy the backend Container App
-3. Frontend must be deployed separately to Azure Storage (see below)
+2. Deploy the backend Container App with managed identity
+3. Assign RBAC roles automatically (Storage Blob Data Contributor, Storage Blob Delegator)
+4. Configure secure authentication (no shared keys)
+5. Frontend must be deployed separately to Azure Storage (see below)
 
-### 4. Verify and Fix Storage Access (Important!)
+### 4. Verify Deployment
 
-After deployment, the storage account may have public access disabled. Run the fix script:
+After deployment, verify everything is configured correctly:
+
+```bash
+# Check storage configuration
+az storage account show --name <your-storage-account> \
+  --resource-group rg-vidann-dev \
+  --query '{allowSharedKeyAccess:allowSharedKeyAccess, publicNetworkAccess:publicNetworkAccess}'
+# Should show: allowSharedKeyAccess=false, publicNetworkAccess=Enabled
+
+# Verify managed identity
+az containerapp show --name annotation-service \
+  --resource-group rg-vidann-dev \
+  --query 'identity.principalId'
+
+# Test backend health
+curl https://<your-annotation-service-url>/health
+```
+
+If storage access issues occur, run the fix script:
 
 ```bash
 # Ensure storage is accessible
@@ -218,8 +238,14 @@ npm run dev
 # Terminal 2: Annotation Service
 cd annotation-service
 python -m pip install -r requirements.txt
+
+# Authenticate with Azure (uses your Azure CLI credentials)
+az login
+
+# Set storage account name
 export AZURE_STORAGE_ACCOUNT_NAME=<your-account-name>
-export AZURE_STORAGE_ACCOUNT_KEY=<your-account-key>
+# No keys needed! Managed identity (DefaultAzureCredential) handles auth
+
 python app/main.py
 # Access at http://localhost:5000
 
@@ -286,9 +312,11 @@ The following environment variables are automatically configured in Azure:
 ### Container App (Annotation API)
 
 ```env
-AZURE_STORAGE_CONNECTION_STRING=<auto-configured>
 AZURE_STORAGE_ACCOUNT_NAME=<auto-configured>
-AZURE_STORAGE_ACCOUNT_KEY=<auto-configured>
+# Authentication via Managed Identity - no keys or connection strings needed!
+# RBAC roles assigned:
+# - Storage Blob Data Contributor
+# - Storage Blob Delegator
 ```
 
 ### Frontend Build-time
@@ -307,10 +335,11 @@ AZURE_SUBSCRIPTION_ID=your-subscription-id
 AZURE_RESOURCE_GROUP=rg-vidann-dev
 AZURE_LOCATION=eastus2
 
-# Storage
+# Storage (Managed Identity - no keys needed!)
 AZURE_STORAGE_ACCOUNT_NAME=vidanndevr5uc5ka6jxm4i
-AZURE_STORAGE_ACCOUNT_KEY=your-storage-key
-AZURE_STORAGE_CONNECTION_STRING=your-connection-string
+# Authentication handled by DefaultAzureCredential:
+# - Azure CLI (az login) for local development
+# - Managed Identity for deployed Container App
 
 # Azure ML
 AZURE_ML_WORKSPACE_NAME=mlw-vidann-dev
@@ -547,10 +576,16 @@ crontab -e
 - Ensure the API URL in the frontend is correct
 - Check CORS configuration on the backend
 
-### Upload fails with "user_delegation_key or account_key must be provided"
+### Upload fails with "user_delegation_key" error
 
-- Verify `AZURE_STORAGE_ACCOUNT_KEY` is set in Container App environment variables
-- Re-provision with `azd provision --no-prompt`
+- Verify managed identity has proper RBAC roles:
+  - Storage Blob Data Contributor
+  - Storage Blob Delegator
+- Check role assignments:
+  ```bash
+  az role assignment list --assignee <managed-identity-principal-id> --scope <storage-account-id>
+  ```
+- Re-provision with `azd provision --no-prompt` to apply RBAC roles
 
 ### Static Web App deployment stuck
 
@@ -564,12 +599,28 @@ crontab -e
 
 ## 🔒 Security
 
-- SAS tokens for time-limited upload access (1-hour expiry)
+### Authentication & Authorization
+
+- **Managed Identity**: Container App uses Azure AD managed identity (no shared keys!)
+- **RBAC**: Fine-grained role assignments (Storage Blob Data Contributor, Storage Blob Delegator)
+- **SAS Tokens**: Time-limited upload access with user delegation keys (1-hour expiry)
+- **No Secrets**: Zero storage keys or connection strings in configuration
+
+### Configuration
+
+- `allowSharedKeyAccess: false` - Shared key authentication disabled
+- `publicNetworkAccess: Enabled` - Required for Container App access
 - CORS configured for cross-origin requests
 - HTTPS enforced on all endpoints
-- Container App managed identity for Azure resource access
-- Storage account keys stored as Container App secrets
 - Network security with Azure Container Apps Environment
+
+### Benefits
+
+- ✅ Automatic credential rotation
+- ✅ Audit trail for all storage access
+- ✅ Least privilege access control
+- ✅ Azure security best practices
+- ✅ No daily access breakage (consistent config)
 
 ## 📚 Documentation
 
