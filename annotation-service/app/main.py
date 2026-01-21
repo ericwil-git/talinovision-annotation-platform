@@ -156,13 +156,12 @@ def get_or_create_frame(blob_name, frame_number):
 
 # Azure Storage configuration
 STORAGE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
-STORAGE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
-STORAGE_CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 CONTAINER_NAME = 'videos'
 FRAMES_CONTAINER = 'frames'  # Persistent frame cache
 FRAME_MAX_WIDTH = 1280  # Resize to 720p for storage efficiency
 
-# Initialize blob service client with managed identity for user delegation keys
+# Initialize blob service client with managed identity
+# No connection strings or shared keys needed!
 credential = DefaultAzureCredential()
 blob_service_client = BlobServiceClient(
     account_url=f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net",

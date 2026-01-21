@@ -32,7 +32,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
     allowBlobPublicAccess: false
-    allowSharedKeyAccess: true // CHANGED: Must be true since Container App uses shared keys
+    allowSharedKeyAccess: false // ✅ Secure: Only managed identity, no shared keys
     publicNetworkAccess: 'Enabled'
     networkAcls: {
       bypass: 'AzureServices'
@@ -248,14 +248,6 @@ resource annotationService 'Microsoft.App/containerApps@2023-05-01' = {
           name: 'registry-password'
           value: containerRegistry.listCredentials().passwords[0].value
         }
-        {
-          name: 'storage-connection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-        }
-        {
-          name: 'storage-key'
-          value: storageAccount.listKeys().keys[0].value
-        }
       ]
     }
     template: {
@@ -269,16 +261,8 @@ resource annotationService 'Microsoft.App/containerApps@2023-05-01' = {
           }
           env: [
             {
-              name: 'AZURE_STORAGE_CONNECTION_STRING'
-              secretRef: 'storage-connection'
-            }
-            {
               name: 'AZURE_STORAGE_ACCOUNT_NAME'
               value: storageAccount.name
-            }
-            {
-              name: 'AZURE_STORAGE_ACCOUNT_KEY'
-              secretRef: 'storage-key'
             }
           ]
         }
@@ -308,6 +292,34 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
       apiLocation: ''
       outputLocation: 'dist'
     }
+  }
+}
+
+// RBAC Role Assignments for Managed Identity
+// Storage Blob Data Contributor role
+var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+var storageBlobDelegatorRoleId = 'db58b8e5-c6ad-4a2a-8342-4190687cbf4a'
+
+resource blobContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageAccount.id, annotationService.id, storageBlobDataContributorRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      storageBlobDataContributorRoleId
+    )
+    principalId: annotationService.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource blobDelegatorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageAccount.id, annotationService.id, storageBlobDelegatorRoleId)
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDelegatorRoleId)
+    principalId: annotationService.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
