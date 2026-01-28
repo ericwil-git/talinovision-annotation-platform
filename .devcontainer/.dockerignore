@@ -1,0 +1,17 @@
+# Ignore git files
+.git
+.gitignore
+
+# Ignore post-create script (not needed in image)
+post-create.sh
+
+# Ignore any cached files
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+node_modules
+
+# Ignore logs
+logs/
+*.log

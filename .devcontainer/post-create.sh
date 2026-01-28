@@ -1,14 +1,9 @@
 #!/bin/bash
+# NOTE: This script is no longer needed as all dependencies are now
+# installed directly in the Dockerfile for faster container startup.
+# Keeping this file for reference only.
+
 set -e
 
-echo "Installing Azure CLI extensions..."
-az extension add --name ml --only-show-errors || echo "Warning: Failed to install ml extension"
-az extension add --name containerapp --only-show-errors || echo "Warning: Failed to install containerapp extension"
-
-echo "Installing Python packages..."
-pip install --user -r .devcontainer/requirements.txt
-
-echo "Installing npm global packages..."
-npm install -g @azure/static-web-apps-cli
-
-echo "Post-create setup completed successfully!"
+echo "All dependencies are now pre-installed in the Docker image."
+echo "No post-create setup needed!"
